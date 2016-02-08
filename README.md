@@ -82,6 +82,12 @@ Show any code that is needed to
 
 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
+getwd()
+unzip(zipfile = "/Users/xindongli/Documents/RepData_PeerAssessment1/activity.zip")
+data <- read.csv("activity.csv")
+library(ggplot2)
+total<- tapply(data$steps, data$date, FUN = sum, na.rm = TRUE)
+qplot(total, binwidth = 1000, xlab = "total steps per day")
 
 ### What is mean total number of steps taken per day?
 
@@ -92,12 +98,20 @@ the dataset.
 
 2. Calculate and report the **mean** and **median** total number of steps taken per day
 
+mean(total, na.rm = TRUE)
+median(total, na.rm = TRUE)
 
 ### What is the average daily activity pattern?
 
 1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+avg <- aggregate(x = list(steps = data$steps), by = list(interval = data$interval), 
+                  FUN = mean, na.rm = TRUE)
+ggplot(data = avg, aes(x = interval, y = steps)) + geom_line() + xlab("5-minute interval") + 
+     ylab("average steps")
+avg[which.max(avg$steps), ]
 
 
 ### Imputing missing values
@@ -114,6 +128,21 @@ bias into some calculations or summaries of the data.
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
+mvalue<- is.na(data$steps)
+table(mvalue)
+fvalue<- function(steps, interval) {
+     filled <- NA
+     if (!is.na(steps)) 
+         filled <- c(steps) else filled <- (avg[avg$interval == interval, "steps"])
+     return(filled)
+ }
+filled.data <- data
+filled.data$steps <- mapply(fvalue, filled.data$steps, filled.data$interval)
+total<- tapply(filled.data$steps, filled.data$date, FUN = sum)
+qplot(total, binwidth = 1000, xlab = "total steps per day")
+
+mean(total)
+median(total)
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
@@ -125,6 +154,18 @@ the dataset with the filled-in missing values for this part.
 1. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using **simulated data**:
 
 ![Sample panel plot](instructions_fig/sample_panelplot.png) 
+
+weekday.or.weekend <- function(date) {
+     day <- weekdays(date)
+     if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")) 
+         return("weekday") else if (day %in% c("Saturday", "Sunday")) 
+         return("weekend") else stop("invalid date")
+ }
+filled.data$date <- as.Date(filled.data$date)
+filled.data$day <- sapply(filled.data$date, FUN = weekday.or.weekend)
+averages <- aggregate(steps ~ interval + day, data = filled.data, mean)
+ggplot(averages, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) + 
+     xlab("5-minute interval") + ylab("Number of steps")
 
 
 **Your plot will look different from the one above** because you will
@@ -162,7 +203,7 @@ in GitHub by doing the following:
 A valid submission will look something like (this is just an **example**!)
 
 ```r
-https://github.com/rdpeng/RepData_PeerAssessment1
+https://github.com/kimzhan/RepData_PeerAssessment1.git
 
-7c376cc5447f11537f8740af8e07d6facc3d9645
+f69ae7fd981e3dbd137c33f9ad195bf30ed4bb4f
 ```
