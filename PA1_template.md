@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -13,6 +8,9 @@ data <- read.csv("activity.csv")
 library(ggplot2)
 total<- tapply(data$steps, data$date, FUN = sum, na.rm = TRUE)
 qplot(total, binwidth = 1000, xlab = "total steps per day")
+
+[Rplot01.png](https://github.com/kimzhan/RepData_PeerAssessment1/blob/master/Rplot01.png)
+
 ##  is mean total number of steps taken per day?
 
 mean(total, na.rm = TRUE)
@@ -25,6 +23,8 @@ avg <- aggregate(x = list(steps = data$steps), by = list(interval = data$interva
 ggplot(data = avg, aes(x = interval, y = steps)) + geom_line() + xlab("5-minute interval") + 
      ylab("average steps")
 avg[which.max(avg$steps), ]
+
+[Rplot02.png](https://github.com/kimzhan/RepData_PeerAssessment1/blob/master/Rplot02.png)
 
 ## Imputing missing values
 
@@ -44,6 +44,8 @@ qplot(total, binwidth = 1000, xlab = "total steps per day")
 mean(total)
 median(total)
 
+[Rplot03.png](https://github.com/kimzhan/RepData_PeerAssessment1/blob/master/Rplot03.png)
+
 ## Are there differences in activity patterns between weekdays and weekends?
 weekday.or.weekend <- function(date) {
      day <- weekdays(date)
@@ -56,3 +58,5 @@ filled.data$day <- sapply(filled.data$date, FUN = weekday.or.weekend)
 averages <- aggregate(steps ~ interval + day, data = filled.data, mean)
 ggplot(averages, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) + 
      xlab("5-minute interval") + ylab("Number of steps")
+
+[Rplot.png](https://github.com/kimzhan/RepData_PeerAssessment1/blob/master/Rplot.png)
